@@ -1,0 +1,143 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.*;
+
+import edu.infosys.lostFoundLocatorApplication.bean.LostfoundUser;
+import edu.infosys.lostFoundLocatorApplication.service.LostfoundUserService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+
+@RestController
+@RequestMapping("/lostfound")
+@CrossOrigin(origins = "http://localhost:3535", allowCredentials = "true")
+public class LoginController {
+
+    @Autowired
+    private LostfoundUserService service;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    // ================= REGISTER =================
+    @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> registerNewUser(@RequestBody LostfoundUser user) {
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        service.saveUser(user);
+        return ResponseEntity.ok("\"User Registered Successfully\"");
+    }
+
+    // ================= LOGIN =================
+    @GetMapping(value = "/login/{userId}/{password}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String validateUser(@PathVariable String userId,
+                               @PathVariable String password,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+        try {
+            Authentication authentication =
+                    authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(userId, password)
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            HttpSessionSecurityContextRepository repo = new HttpSessionSecurityContextRepository();
+            repo.saveContext(SecurityContextHolder.getContext(), request, response);
+
+            return "\"" + service.getRole() + "\"";
+
+        } catch (Exception ex) {
+            return "\"false\"";
+        }
+    }
+
+    // ================= FORGOT PASSWORD =================
+    @PostMapping(value = "/forgot-password/{username}/{newPassword}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updatePassword(@PathVariable String username,
+                                                 @PathVariable String newPassword) {
+
+        LostfoundUser user = service.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.badRequest().body("\"User not found\"");
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        service.saveUser(user);
+
+        return ResponseEntity.ok("\"Password Updated Successfully\"");
+    }
+
+    // ================= GET USER DETAILS =================
+    @GetMapping("/login")
+    public LostfoundUser getUserDetails() {
+        return service.getUser();
+    }
+
+    // ================= DELETE USER =================
+    @DeleteMapping("/login/{username}")
+    public void deleteUser(@PathVariable String username) {
+        service.deleteUser(username);
+    }
+
+    // ================= GET CURRENT USERNAME =================
+    @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getUserId() {
+        return "\"" + service.getUserId() + "\"";
+    }
+
+    // ================= GET CURRENT ROLE =================
+    @GetMapping(value = "/role", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getRole() {
+        return "\"" + service.getRole() + "\"";
+    }
+
+    // ================= GET FULL USER =================
+    @GetMapping("/me")
+    public LostfoundUser getUser() {
+        return service.getUser();
+    }
+
+    // ================= LOGOUT =================
+    @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> logout(HttpServletRequest request,
+                                         HttpServletResponse response) {
+
+        SecurityContextHolder.clearContext();
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("\"Logout successful\"");
+    }
+
+    // ================= GET ALL STUDENTS =================
+    @GetMapping("/students")
+    public ResponseEntity<List<LostfoundUser>> getAllStudents() {
+        return ResponseEntity.ok(service.getAllStudents());
+    }
+}

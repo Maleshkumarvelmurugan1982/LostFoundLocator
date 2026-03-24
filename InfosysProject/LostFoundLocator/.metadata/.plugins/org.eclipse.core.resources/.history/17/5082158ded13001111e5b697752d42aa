@@ -1,0 +1,85 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+import edu.infosys.lostFoundLocatorApplication.service.FoundItemService;
+import edu.infosys.lostFoundLocatorApplication.service.LostfoundUserService;
+
+@RestController
+@RequestMapping("/lostfound")
+@CrossOrigin(origins = "http://localhost:3535", allowCredentials = "true")
+public class FoundItemController {
+
+    @Autowired
+    private FoundItemService foundService;
+
+    @Autowired
+    private LostfoundUserService userService;
+
+    private static final String UPLOAD_DIR = "uploads/";
+
+    @PostMapping("/founditem")
+    public ResponseEntity<?> saveFoundItem(
+            @RequestParam("itemName") String itemName,
+            @RequestParam("brand") String brand,
+            @RequestParam("category") String category,
+            @RequestParam("description") String description,
+            @RequestParam("location") String location,
+            @RequestParam("date") String date,
+            @RequestParam("image") MultipartFile file) {
+
+        try {
+
+            File folder = new File(UPLOAD_DIR);
+            if (!folder.exists()) folder.mkdir();
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(UPLOAD_DIR).resolve(fileName);
+            Files.write(path, file.getBytes());
+
+            FoundItem item = new FoundItem();
+            item.setItemName(itemName);
+            item.setBrand(brand);
+            item.setCategory(category);
+            item.setDescription(description);
+            item.setLocation(location);
+            item.setDate(LocalDate.parse(date));
+            item.setImagePath(fileName);
+            item.setPostedBy(userService.getUserId());
+            item.setStatus("FOUND");
+
+            foundService.saveFoundItem(item);
+
+            return ResponseEntity.ok("Found Item Saved");
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/founditem")
+    public List<FoundItem> getFoundItems() {
+
+        if ("Admin".equalsIgnoreCase(userService.getRole())) {
+            return foundService.getAllFoundItems();
+        }
+
+        return foundService.getFoundItemsByUsername(userService.getUserId());
+    }
+
+    @DeleteMapping("/founditem/{id}")
+    public void deleteFoundItem(@PathVariable Long id) {
+        foundService.deleteFoundItem(id);
+    }
+}

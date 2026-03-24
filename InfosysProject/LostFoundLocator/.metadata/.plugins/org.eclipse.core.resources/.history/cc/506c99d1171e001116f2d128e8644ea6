@@ -1,0 +1,38 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItem;
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItemDTO;
+import edu.infosys.lostFoundLocatorApplication.dao.MatchItemDao;
+import edu.infosys.lostFoundLocatorApplication.service.MatchItemService;
+
+@RestController
+@RequestMapping("/lostfound/")
+@CrossOrigin(origins = "http://localhost:3535", allowCredentials = "true")
+public class MatchItemController {
+
+    @Autowired
+    private MatchItemDao matchItemDao;
+
+    @Autowired
+    private MatchItemService service;
+
+    // ================= SAVE / CLAIM MATCH =================
+    @PostMapping("/match")
+    public void saveMatchItem(@RequestBody MatchItemDTO matchItemDTO) {
+        service.updateLostFoundItems(matchItemDTO);           // ✅ updates lost & found status
+        MatchItem matchItem = new MatchItem(matchItemDTO);    // ✅ construct from DTO
+        matchItemDao.saveMatchItem(matchItem);                // ✅ save match record
+    }
+
+    // ================= GET ALL MATCHES =================
+    @GetMapping("/match")
+    public List<MatchItem> getAllMatchItems() {
+        return matchItemDao.getAllMatchItems();
+    }
+
+}

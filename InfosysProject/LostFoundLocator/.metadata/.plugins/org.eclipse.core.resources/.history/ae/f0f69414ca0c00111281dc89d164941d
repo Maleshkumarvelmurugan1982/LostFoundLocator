@@ -1,0 +1,9 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+public class LostItemDao {
+	public void saveLostItem(LostItem lostItem);
+	public List<LostItem> getAllLostItems();
+	public LostItem getLostItemById(String lostItemId);
+	public void deleteLostItemById(String lostItemId);
+	public String getLastId();
+}

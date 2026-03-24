@@ -1,0 +1,51 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+
+@Repository
+public interface FoundItemRepository extends JpaRepository<FoundItem, String> {
+
+    // ================= GET LAST ID =================
+    @Query(value = "SELECT id FROM found_items ORDER BY id DESC LIMIT 1", nativeQuery = true)
+    String getLastId();
+
+    // ================= KEYWORD SEARCH =================
+    @Query(value =
+            "SELECT * FROM found_items " +
+            "WHERE LOWER(item_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(category) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(brand) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(description) LIKE LOWER(CONCAT('%', :keyword, '%'))",
+            nativeQuery = true)
+    List<FoundItem> searchByKeyword(@Param("keyword") String keyword);
+
+    // ================= SOUNDEX FUZZY SEARCH =================
+    @Query(value =
+            "SELECT * FROM found_items " +
+            "WHERE SOUNDEX(item_name) = SOUNDEX(:keyword) " +
+            "OR SOUNDEX(category) = SOUNDEX(:keyword) " +
+            "OR SOUNDEX(brand) = SOUNDEX(:keyword)",
+            nativeQuery = true)
+    List<FoundItem> fuzzySearchBySoundex(@Param("keyword") String keyword);
+
+    // ================= PROBABLE MATCH BY CATEGORY + ITEM NAME + LOCATION PRIORITY =================
+    // ✅ status = true means FOUND (available, not yet claimed)
+    // ✅ same location items appear first
+    @Query(value =
+            "SELECT * FROM found_items " +
+            "WHERE LOWER(category) = LOWER(:category) " +
+            "AND LOWER(item_name) = LOWER(:itemName) " +
+            "AND status = true " +
+            "ORDER BY CASE WHEN LOWER(location) = LOWER(:location) THEN 0 ELSE 1 END",
+            nativeQuery = true)
+    List<FoundItem> findByCategoryIgnoreCaseAndItemNameIgnoreCase(
+            @Param("category") String category,
+            @Param("itemName") String itemName,
+            @Param("location") String location
+    );
+}

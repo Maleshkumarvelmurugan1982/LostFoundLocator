@@ -1,0 +1,14 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import java.util.List;
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItem;
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+
+public interface MatchItemDao {
+    void saveMatchItem(MatchItem item);
+    List<MatchItem> getAllMatchItems();
+    void deleteMatchItem(String lostItemId, String foundItemId);
+    
+    // ✅ NEW - find probable matches
+    List<FoundItem> findProbableMatches(String category, String itemName);
+}

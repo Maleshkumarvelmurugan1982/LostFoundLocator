@@ -1,0 +1,12 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import edu.infosys.lostFoundLocatorApplication.bean.LostItem;
+
+@Repository
+public interface LostItemRepository 
+        extends JpaRepository<LostItem, Long> {
+
+}

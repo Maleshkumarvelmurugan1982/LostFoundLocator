@@ -1,0 +1,40 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import edu.infosys.lostFoundLocatorApplication.bean.LostItem;
+
+@Repository
+public class LostItemDaoImpl implements LostItemDao {
+
+    @Autowired
+    private LostItemRepository repository;
+
+    @Override
+    public void saveLostItem(LostItem lostItem) {
+        repository.save(lostItem);
+    }
+
+    @Override
+    public List<LostItem> getAllLostItems() {
+        return repository.findAll();
+    }
+
+    @Override
+    public LostItem getLostItemById(Long lostItemId) {
+        return repository.findById(lostItemId).get();
+    }
+
+    @Override
+    public void deleteLostItemById(Long lostItemId) {
+        repository.deleteById(lostItemId);
+    }
+
+    @Override
+    public Long getLastId() {
+        return repository.getLastId();
+    }
+}

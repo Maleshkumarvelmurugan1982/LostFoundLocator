@@ -1,0 +1,7 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public class LostItemRepository implements JpaRepository<T, ID> {
+
+}

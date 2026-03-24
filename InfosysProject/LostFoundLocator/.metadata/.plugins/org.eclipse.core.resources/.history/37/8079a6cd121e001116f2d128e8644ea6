@@ -1,0 +1,96 @@
+package edu.infosys.lostFoundLocatorApplication.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+import edu.infosys.lostFoundLocatorApplication.bean.LostItem;
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItem;
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItemDTO;
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItemId;
+import edu.infosys.lostFoundLocatorApplication.dao.FoundItemDAO;
+import edu.infosys.lostFoundLocatorApplication.dao.LostItemDao;
+import edu.infosys.lostFoundLocatorApplication.dao.MatchItemRepository;
+
+@Service
+public class MatchItemService {
+
+    @Autowired
+    private MatchItemRepository repository;
+
+    @Autowired
+    private LostItemDao lostItemDao;
+
+    @Autowired
+    private FoundItemDAO foundItemDao;
+
+    // ================= UPDATE LOST & FOUND STATUS =================
+    public void updateLostFoundItems(MatchItemDTO matchItemDTO) {
+        String lostItemId = matchItemDTO.getLostItemId();
+        String foundItemId = matchItemDTO.getFoundItemId();
+
+        LostItem lostItem = lostItemDao.getLostItemById(lostItemId);
+        FoundItem foundItem = foundItemDao.getFoundItemById(foundItemId);
+
+        lostItem.setStatus(true);
+        foundItem.setStatus(true);
+
+        lostItemDao.saveLostItem(lostItem);
+        foundItemDao.saveFoundItem(foundItem);
+    }
+
+    // ================= SAVE MATCH =================
+    public void saveMatchItem(MatchItemDTO dto) {
+        MatchItemId id = new MatchItemId(
+                dto.getLostItemId(),
+                dto.getFoundItemId()
+        );
+
+        // prevent duplicate match
+        if (!repository.existsById(id)) {
+            MatchItem item = new MatchItem();
+            item.setMatchItemId(id);
+            item.setItemName(dto.getItemName());
+            item.setCategory(dto.getCategory());
+            item.setLostUsername(dto.getLostUsername());
+            item.setFoundUsername(dto.getFoundUsername());
+            item.setImage(dto.getImage());
+            repository.save(item);
+
+            // Update status of both lost and found items
+            updateLostFoundItems(dto);
+        }
+    }
+
+    // ================= GET ALL MATCHES =================
+    public List<MatchItemDTO> getAllMatches() {
+        List<MatchItem> items = repository.findAll();
+        List<MatchItemDTO> result = new ArrayList<>();
+        for (MatchItem item : items) {
+            result.add(new MatchItemDTO(item));
+        }
+        return result;
+    }
+
+    // ================= GET MATCH BY ID =================
+    public Optional<MatchItemDTO> getMatch(String lostId, String foundId) {
+        MatchItemId id = new MatchItemId(lostId, foundId);
+        Optional<MatchItem> itemOpt = repository.findById(id);
+        if (itemOpt.isPresent()) {
+            return Optional.of(new MatchItemDTO(itemOpt.get()));
+        }
+        return Optional.empty();
+    }
+
+    // ================= DELETE MATCH =================
+    public void deleteMatch(String lostId, String foundId) {
+        MatchItemId id = new MatchItemId(lostId, foundId);
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+        }
+    }
+}

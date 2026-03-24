@@ -1,0 +1,5 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+public class UserController {
+
+}

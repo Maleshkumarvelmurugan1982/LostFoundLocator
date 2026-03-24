@@ -1,0 +1,5 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+public class LostItemDaoImpl implements LostItemDao {
+
+}

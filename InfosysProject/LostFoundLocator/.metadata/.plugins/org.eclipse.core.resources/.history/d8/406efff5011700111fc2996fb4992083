@@ -1,0 +1,53 @@
+package edu.infosys.lostFoundLocatorApplication.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+import edu.infosys.lostFoundLocatorApplication.dao.FoundItemRepository;
+
+@Service
+public class FoundItemService {
+
+    @Autowired
+    private FoundItemRepository repository;
+
+    // ================= GENERATE ID (F0001, F0002...) =================
+    private String generateNextId() {
+
+        String lastId = repository.getLastId();
+
+        if (lastId == null || lastId.isEmpty()) {
+            return "F0001";
+        }
+
+        int number = Integer.parseInt(lastId.substring(1));
+        number++;
+
+        return String.format("F%04d", number);
+    }
+
+    // ================= SAVE =================
+    public void saveFoundItem(FoundItem item) {
+
+        // 🔥 If new item
+        if (item.getId() == null || item.getId().isEmpty()) {
+            item.setId(generateNextId());
+            item.setStatus(true);
+        }
+
+        repository.save(item);
+    }
+
+    // ================= GET ALL =================
+    public List<FoundItem> getAllFoundItems() {
+        return repository.findAll();
+    }
+
+    // ================= DELETE =================
+    public void deleteFoundItemById(String id) {
+        repository.deleteById(id);
+    }
+}

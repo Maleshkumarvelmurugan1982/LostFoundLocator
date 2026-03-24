@@ -1,0 +1,50 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import edu.infosys.lostFoundLocatorApplication.bean.MatchItemDTO;
+import edu.infosys.lostFoundLocatorApplication.service.MatchItemService;
+import edu.infosys.lostFoundLocatorApplication.service.FoundItemService;
+
+@RestController
+@RequestMapping("/match")
+@CrossOrigin
+public class MatchItemController {
+
+    @Autowired
+    private MatchItemService matchService;
+
+    @Autowired
+    private FoundItemService foundService;
+
+    // ================= CREATE MATCH (CLAIM BUTTON) =================
+    @PostMapping("/claim")
+    public String claimItem(@RequestBody MatchItemDTO dto) {
+
+        // Save match record
+        matchService.saveMatchItem(dto);
+
+        // Update found item status to CLAIMED
+        foundService.claimItem(dto.getFoundItemId());
+
+        return "Item successfully claimed!";
+    }
+
+    // ================= GET ALL MATCHES =================
+    @GetMapping("/all")
+    public List<MatchItemDTO> getAllMatches() {
+        return matchService.getAllMatches();
+    }
+
+    // ================= DELETE MATCH =================
+    @DeleteMapping("/{lostId}/{foundId}")
+    public String deleteMatch(@PathVariable String lostId,
+                              @PathVariable String foundId) {
+
+        matchService.deleteMatch(lostId, foundId);
+        return "Match deleted successfully";
+    }
+}

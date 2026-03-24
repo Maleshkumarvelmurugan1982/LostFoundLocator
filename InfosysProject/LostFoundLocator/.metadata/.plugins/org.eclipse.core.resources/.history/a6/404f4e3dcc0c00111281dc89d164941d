@@ -1,0 +1,18 @@
+package edu.infosys.lostFoundLocatorApplication.dao;
+
+import java.util.List;
+
+import edu.infosys.lostFoundLocatorApplication.bean.LostItem;
+
+public interface LostItemDao {
+
+    void saveLostItem(LostItem lostItem);
+
+    List<LostItem> getAllLostItems();
+
+    LostItem getLostItemById(Long lostItemId);
+
+    void deleteLostItemById(Long lostItemId);
+
+    Long getLastId();
+}

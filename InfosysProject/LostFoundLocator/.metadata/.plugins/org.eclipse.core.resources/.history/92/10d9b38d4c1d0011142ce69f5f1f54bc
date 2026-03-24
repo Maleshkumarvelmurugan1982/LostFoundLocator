@@ -1,0 +1,155 @@
+package edu.infosys.lostFoundLocatorApplication.controller;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
+import edu.infosys.lostFoundLocatorApplication.service.FoundItemService;
+import edu.infosys.lostFoundLocatorApplication.service.LostfoundUserService;
+
+@RestController
+@RequestMapping("/lostfound")
+@CrossOrigin(origins = "http://localhost:3535", allowCredentials = "true")
+public class FoundItemController {
+
+    @Autowired
+    private FoundItemService service;
+
+    @Autowired
+    private LostfoundUserService userService;
+
+    private static final String UPLOAD_DIR = "uploads/";
+
+    // ================= SAVE FOUND ITEM =================
+    @PostMapping("/founditem")
+    public ResponseEntity<?> saveFoundItem(
+            @RequestParam String itemName,
+            @RequestParam String brand,
+            @RequestParam String category,
+            @RequestParam String description,
+            @RequestParam String location,
+            @RequestParam String date,
+            @RequestParam MultipartFile image) {
+
+        try {
+
+            if (image.isEmpty()) {
+                return ResponseEntity.badRequest().body("Image is required");
+            }
+
+            File folder = new File(UPLOAD_DIR);
+            if (!folder.exists()) folder.mkdirs();
+
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(fileName);
+            Files.write(filePath, image.getBytes());
+
+            String username = userService.getUserId();
+
+            FoundItem item = new FoundItem();
+            item.setItemName(itemName);
+            item.setBrand(brand);
+            item.setCategory(category);
+            item.setDescription(description);
+            item.setLocation(location);
+            item.setDate(date);
+            item.setImagePath(fileName);
+            item.setPostedBy(username);
+
+            service.saveFoundItem(item);
+
+            return ResponseEntity.ok("Found Item Saved Successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error saving item: " + e.getMessage());
+        }
+    }
+
+    // ================= GET ALL =================
+    @GetMapping("/founditem")
+    public ResponseEntity<List<FoundItem>> getAllFoundItems() {
+        return ResponseEntity.ok(service.getAllFoundItems());
+    }
+
+    // ================= GET BY ID =================
+    @GetMapping("/founditem/{id}")
+    public ResponseEntity<?> getById(@PathVariable String id) {
+
+        Optional<FoundItem> item = service.getById(id);
+
+        if (item.isPresent()) {
+            return ResponseEntity.ok(item.get());
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    // ================= DELETE =================
+    @DeleteMapping("/founditem/{id}")
+    public ResponseEntity<?> deleteFoundItem(@PathVariable String id) {
+
+        service.deleteFoundItemById(id);
+
+        return ResponseEntity.ok("Deleted Successfully");
+    }
+
+    // ================= UPDATE =================
+    @PutMapping("/founditem/{id}")
+    public ResponseEntity<?> updateFoundItem(
+            @PathVariable String id,
+            @RequestBody FoundItem updatedItem) {
+
+        Optional<FoundItem> existing = service.getById(id);
+
+        if (existing.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        FoundItem item = existing.get();
+
+        item.setItemName(updatedItem.getItemName());
+        item.setBrand(updatedItem.getBrand());
+        item.setCategory(updatedItem.getCategory());
+        item.setDescription(updatedItem.getDescription());
+        item.setLocation(updatedItem.getLocation());
+        item.setDate(updatedItem.getDate());
+        item.setStatus(updatedItem.isStatus());
+
+        service.saveFoundItem(item);
+
+        return ResponseEntity.ok("Updated Successfully");
+    }
+
+    // ================= SERVE IMAGE =================
+    @GetMapping("/uploads/{filename}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) throws IOException {
+
+        Path path = Paths.get(UPLOAD_DIR).resolve(filename);
+        Resource resource = new UrlResource(path.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(Files.probeContentType(path)))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+}
