@@ -1,0 +1,186 @@
+/* FONT */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔥 BACKGROUND IMAGE */
+.as-page {
+  min-height: 100vh;
+  font-family: 'Outfit', sans-serif;
+  color: #ffffff;
+
+  background: url("https://images.unsplash.com/photo-1506765515384-028b60a970df")
+    center/cover no-repeat;
+}
+
+/* OVERLAY */
+.as-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15,10,40,0.7),
+    rgba(10,5,25,0.9)
+  );
+  z-index: 0;
+}
+
+/* CONTENT ABOVE BG */
+.as-page > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* TOPBAR */
+.as-topbar {
+  background: linear-gradient(90deg, #1b1333, #2a1f4d);
+  padding: 22px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* TITLE */
+.as-topbar-title {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.as-topbar-title span {
+  color: #c8973a;
+}
+
+/* BACK BUTTON */
+.as-back-btn {
+  font-size: 16px;
+  padding: 10px 18px;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+/* ADMIN BADGE */
+.as-admin-badge {
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 30px;
+  color: #c8973a;
+  border: 1px solid rgba(200,151,58,0.5);
+}
+
+/* CONTENT */
+.as-content {
+  max-width: 1300px;
+  margin: auto;
+  padding: 50px 30px;
+}
+
+/* 🔥 HEADER ALIGN FIX */
+.as-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+/* TITLE BIG */
+.as-info h2 {
+  font-size: 42px; /* 🔥 BIGGER */
+  font-weight: 600;
+}
+
+/* COUNT INLINE */
+.as-count-pill {
+  margin-left: 12px;
+  font-size: 16px;
+  background: #c8973a;
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+/* SUBTITLE */
+.as-info p {
+  font-size: 18px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 6px;
+}
+
+/* SEARCH */
+.as-search {
+  font-size: 18px;
+  padding: 14px 22px;
+  border-radius: 40px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  width: 320px;
+}
+
+.as-search::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+/* GRID */
+.as-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* CARD */
+.as-card {
+  background: rgba(36,26,68,0.85);
+  backdrop-filter: blur(14px);
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: 0.3s;
+}
+
+.as-card:hover {
+  transform: translateY(-6px);
+}
+
+/* AVATAR */
+.as-avatar {
+  width: 65px;
+  height: 65px;
+  font-size: 26px;
+}
+
+/* NAME */
+.as-card-name {
+  font-size: 22px;
+}
+
+.as-card-username {
+  font-size: 16px;
+}
+
+/* FIELD */
+.as-field {
+  font-size: 16px;
+}
+
+/* ROLE */
+.as-role-badge {
+  font-size: 13px;
+}
+
+/* DELETE */
+.as-delete-btn {
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+/* EMPTY */
+.as-empty {
+  font-size: 20px;
+}

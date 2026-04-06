@@ -33,15 +33,21 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, String> {
             nativeQuery = true)
     List<FoundItem> fuzzySearchBySoundex(@Param("keyword") String keyword);
 
-    // ================= PROBABLE MATCH BY CATEGORY + ITEM NAME + LOCATION PRIORITY =================
-    // ✅ status = true means FOUND (available, not yet claimed)
-    // ✅ same location items appear first
+    // ================= PROBABLE MATCH (EXACT + SOUNDEX FUZZY) =================
     @Query(value =
-            "SELECT * FROM found_items " +
-            "WHERE LOWER(category) = LOWER(:category) " +
-            "AND LOWER(item_name) = LOWER(:itemName) " +
-            "AND status = true " +
-            "ORDER BY CASE WHEN LOWER(location) = LOWER(:location) THEN 0 ELSE 1 END",
+            "SELECT * FROM found_items f " +
+            "WHERE LOWER(f.category) = LOWER(:category) " +
+            "AND (" +
+                "LOWER(f.item_name) = LOWER(:itemName) " +          // exact match
+                "OR SOUNDEX(f.item_name) = SOUNDEX(:itemName) " +   // sounds like
+                "OR LOWER(f.item_name) LIKE LOWER(CONCAT('%', :itemName, '%')) " + // contains
+                "OR LOWER(:itemName) LIKE LOWER(CONCAT('%', f.item_name, '%')) " + // reverse contains
+            ") " +
+            "AND f.status = true " +
+            "AND f.id NOT IN (SELECT found_item_id FROM match_items) " +
+            "ORDER BY " +
+                "CASE WHEN LOWER(f.item_name) = LOWER(:itemName) THEN 0 ELSE 1 END, " +  // exact first
+                "CASE WHEN LOWER(f.location) = LOWER(:location) THEN 0 ELSE 1 END",      // same location second
             nativeQuery = true)
     List<FoundItem> findByCategoryIgnoreCaseAndItemNameIgnoreCase(
             @Param("category") String category,

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class LostItemController {
 
     private static final String UPLOAD_DIR = "uploads/";
 
-    // ================= SAVE LOST ITEM =================
+    // ================= SAVE =================
     @PostMapping("/lostitem")
     public ResponseEntity<?> saveLostItem(
             @RequestParam("itemName") String itemName,
@@ -48,6 +49,9 @@ public class LostItemController {
             Path filePath = Paths.get(UPLOAD_DIR).resolve(fileName);
             Files.write(filePath, file.getBytes());
 
+            String username = userService.getUserId();
+            if (username == null) username = "guest";
+
             LostItem item = new LostItem();
 
             item.setItemName(itemName);
@@ -57,30 +61,41 @@ public class LostItemController {
             item.setLocation(location);
             item.setDate(date);
             item.setImagePath(fileName);
-
-            // ✅ SAFE USERNAME SET
-            String username = userService.getUserId();
-            if (username == null || username.equals("anonymousUser")) {
-                username = "guestUser";
-            }
-
             item.setPostedBy(username);
             item.setStatus(true);
 
             lostService.saveLostItem(item);
 
-            return ResponseEntity.ok("Lost Item Saved Successfully");
+            return ResponseEntity.ok("Saved");
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // ================= GET ALL LOST ITEMS =================
+    // ================= 🔥 ROLE BASED FETCH =================
     @GetMapping("/lostitem")
     public List<LostItem> getLostItems() {
-        return lostService.getAllLostItems(); // ✅ Always return all
+
+        String role = userService.getRole();
+        String username = userService.getUserId();
+
+        List<LostItem> allItems = lostService.getAllLostItems();
+
+        // 🔥 fallback
+        if (role == null || username == null) {
+            return allItems;
+        }
+
+        // 🔥 ADMIN
+        if (role.equalsIgnoreCase("Admin")) {
+            return allItems;
+        }
+
+        // 🔥 STUDENT
+        return allItems.stream()
+                .filter(item -> username.equals(item.getPostedBy()))
+                .collect(Collectors.toList());
     }
 
     // ================= DELETE =================
@@ -88,12 +103,13 @@ public class LostItemController {
     public void deleteLostItem(@PathVariable String id) {
         lostService.deleteLostItemById(id);
     }
- // ================= UPDATE LOST ITEM =================
+
+    // ================= UPDATE =================
     @PutMapping("/lostitem")
     public ResponseEntity<?> updateLostItem(@RequestBody LostItem lostItem) {
 
-        lostService.saveLostItem(lostItem);  // save() works for update also
+        lostService.saveLostItem(lostItem);
 
-        return ResponseEntity.ok("Lost Item Updated Successfully");
+        return ResponseEntity.ok("Updated");
     }
 }

@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
-import edu.infosys.lostFoundLocatorApplication.bean.FoundItemDTO;
 import edu.infosys.lostFoundLocatorApplication.service.FoundItemService;
 import edu.infosys.lostFoundLocatorApplication.service.LostfoundUserService;
 
@@ -35,7 +34,7 @@ public class FoundItemController {
 
     private static final String UPLOAD_DIR = "uploads/";
 
-    // ================= SAVE FOUND ITEM =================
+    // ================= SAVE =================
     @PostMapping("/founditem")
     public ResponseEntity<?> saveFoundItem(
             @RequestParam String itemName,
@@ -48,10 +47,6 @@ public class FoundItemController {
 
         try {
 
-            if (image.isEmpty()) {
-                return ResponseEntity.badRequest().body("Image is required");
-            }
-
             File folder = new File(UPLOAD_DIR);
             if (!folder.exists()) folder.mkdirs();
 
@@ -60,6 +55,7 @@ public class FoundItemController {
             Files.write(filePath, image.getBytes());
 
             String username = userService.getUserId();
+            if (username == null) username = "guest";
 
             FoundItem item = new FoundItem();
             item.setItemName(itemName);
@@ -70,99 +66,58 @@ public class FoundItemController {
             item.setDate(date);
             item.setImagePath(fileName);
             item.setPostedBy(username);
+            item.setStatus(true);
 
             service.saveFoundItem(item);
 
-            return ResponseEntity.ok("Found Item Saved Successfully");
+            return ResponseEntity.ok("Saved");
 
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error saving item: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
-    // ================= GET ALL FOUND ITEMS =================
+    // ================= 🔥 ROLE BASED FETCH =================
     @GetMapping("/founditem")
     public ResponseEntity<List<FoundItem>> getAllFoundItems() {
-        return ResponseEntity.ok(service.getAllFoundItems());
-    }
 
-    // ================= GET FOUND ITEM BY ID =================
-    @GetMapping("/founditem/{id}")
-    public ResponseEntity<?> getById(@PathVariable String id) {
+        String role = userService.getRole();
+        String username = userService.getUserId();
 
-        Optional<FoundItem> item = service.getById(id);
+        List<FoundItem> allItems = service.getAllFoundItems();
 
-        if (item.isPresent()) {
-            return ResponseEntity.ok(item.get());
+        // 🔥 fallback (no login issue)
+        if (role == null || username == null) {
+            return ResponseEntity.ok(allItems);
         }
 
-        return ResponseEntity.notFound().build();
-    }
-
-    // ================= DELETE FOUND ITEM =================
-    @DeleteMapping("/founditem/{id}")
-    public ResponseEntity<?> deleteFoundItem(@PathVariable String id) {
-
-        service.deleteFoundItemById(id);
-
-        return ResponseEntity.ok("Deleted Successfully");
-    }
-
-    // ================= UPDATE FOUND ITEM =================
-    @PutMapping("/founditem/{id}")
-    public ResponseEntity<?> updateFoundItem(
-            @PathVariable String id,
-            @RequestBody FoundItem updatedItem) {
-
-        Optional<FoundItem> existing = service.getById(id);
-
-        if (existing.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        // 🔥 ADMIN → ALL
+        if (role.equalsIgnoreCase("Admin")) {
+            return ResponseEntity.ok(allItems);
         }
 
-        FoundItem item = existing.get();
+        // 🔥 STUDENT → ONLY THEIR ITEMS
+        List<FoundItem> filtered = allItems.stream()
+                .filter(item -> username.equals(item.getPostedBy()))
+                .collect(Collectors.toList());
 
-        item.setItemName(updatedItem.getItemName());
-        item.setBrand(updatedItem.getBrand());
-        item.setCategory(updatedItem.getCategory());
-        item.setDescription(updatedItem.getDescription());
-        item.setLocation(updatedItem.getLocation());
-        item.setDate(updatedItem.getDate());
-        item.setStatus(updatedItem.isStatus());
-
-        service.saveFoundItem(item);
-
-        return ResponseEntity.ok("Updated Successfully");
+        return ResponseEntity.ok(filtered);
     }
 
-    // ================= SEARCH FOUND ITEMS =================
-    @GetMapping("/founditem/search")
-    public ResponseEntity<List<FoundItemDTO>> searchFoundItems(
-            @RequestParam String itemName,
-            @RequestParam String category,
-            @RequestParam String brand) {
-
-        List<FoundItemDTO> items =
-                service.collectFoundItems(itemName, category, brand);
-
-        return ResponseEntity.ok(items);
-    }
-
-    // ================= CLAIM FOUND ITEM =================
+    // ================= CLAIM =================
     @PostMapping("/founditem/claim/{id}")
     public ResponseEntity<?> claimItem(@PathVariable String id) {
 
         boolean result = service.claimItem(id);
 
         if (result) {
-            return ResponseEntity.ok("Item Claimed Successfully");
+            return ResponseEntity.ok("Claimed Successfully");
         }
 
         return ResponseEntity.badRequest().body("Item not found");
     }
 
-    // ================= SERVE IMAGE =================
+    // ================= IMAGE =================
     @GetMapping("/uploads/{filename}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) throws IOException {
 

@@ -23,35 +23,28 @@ public class MatchItemService {
     private MatchItemRepository repository;
 
     @Autowired
-    private LostItemDao lostItemDao;        // ✅ confirmed
+    private LostItemDao lostItemDao;
 
     @Autowired
-    private FoundItemDAO foundItemDao;      // ✅ confirmed
+    private FoundItemDAO foundItemDao;
 
-    // ================= UPDATE LOST & FOUND STATUS =================
-    public void updateLostFoundItems(MatchItemDTO matchItemDTO) {
-        String lostItemId = matchItemDTO.getLostItemId();
-        String foundItemId = matchItemDTO.getFoundItemId();
-
-        LostItem lostItem = lostItemDao.getLostItemById(lostItemId);   // ✅ LostItemDao
-        FoundItem foundItem = foundItemDao.findById(foundItemId);      // ✅ FoundItemDAO
-
-        lostItem.setStatus(true);
-        foundItem.setStatus(true);
-
-        lostItemDao.saveLostItem(lostItem);    // ✅ LostItemDao
-        foundItemDao.update(foundItem);        // ✅ FoundItemDAO
-    }
-
-    // ================= SAVE MATCH =================
+    // ================= SAVE MATCH (FINAL FIX) =================
     public void saveMatchItem(MatchItemDTO dto) {
+
         MatchItemId id = new MatchItemId(
                 dto.getLostItemId(),
                 dto.getFoundItemId()
         );
 
-        // prevent duplicate match
         if (!repository.existsById(id)) {
+
+            // 🔥 GET IMAGE FROM FOUND ITEM
+            FoundItem foundItem = foundItemDao.findById(dto.getFoundItemId());
+
+            if (foundItem != null) {
+                dto.setImage(foundItem.getImagePath()); // ✅ FIX
+            }
+
             MatchItem item = new MatchItem();
             item.setMatchItemId(id);
             item.setItemName(dto.getItemName());
@@ -59,36 +52,61 @@ public class MatchItemService {
             item.setLostUsername(dto.getLostUsername());
             item.setFoundUsername(dto.getFoundUsername());
             item.setImage(dto.getImage());
-            repository.save(item);
 
-            // Update status of both lost and found items
-            updateLostFoundItems(dto);
+            repository.save(item); // ✅ SAVES TO DB
+
+            updateLostFoundItems(dto); // ✅ UPDATE STATUS
         }
     }
 
-    // ================= GET ALL MATCHES =================
+    // ================= UPDATE STATUS =================
+    public void updateLostFoundItems(MatchItemDTO dto) {
+
+        LostItem lostItem = lostItemDao.getLostItemById(dto.getLostItemId());
+        FoundItem foundItem = foundItemDao.findById(dto.getFoundItemId());
+
+        if (lostItem != null && foundItem != null) {
+
+            lostItem.setStatus(false);  // ✅ recovered
+            foundItem.setStatus(false);
+
+            lostItemDao.saveLostItem(lostItem);
+            foundItemDao.update(foundItem);
+        }
+    }
+
+    // ================= GET ALL =================
     public List<MatchItemDTO> getAllMatches() {
+
         List<MatchItem> items = repository.findAll();
         List<MatchItemDTO> result = new ArrayList<>();
+
         for (MatchItem item : items) {
             result.add(new MatchItemDTO(item));
         }
+
         return result;
     }
 
-    // ================= GET MATCH BY ID =================
+    // ================= GET BY ID =================
     public Optional<MatchItemDTO> getMatch(String lostId, String foundId) {
+
         MatchItemId id = new MatchItemId(lostId, foundId);
+
         Optional<MatchItem> itemOpt = repository.findById(id);
+
         if (itemOpt.isPresent()) {
             return Optional.of(new MatchItemDTO(itemOpt.get()));
         }
+
         return Optional.empty();
     }
 
-    // ================= DELETE MATCH =================
+    // ================= DELETE =================
     public void deleteMatch(String lostId, String foundId) {
+
         MatchItemId id = new MatchItemId(lostId, foundId);
+
         if (repository.existsById(id)) {
             repository.deleteById(id);
         }

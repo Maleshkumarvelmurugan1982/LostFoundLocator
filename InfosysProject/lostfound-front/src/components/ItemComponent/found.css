@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500&display=swap');
+
+:root {
+  --gold: #c8973a;
+  --bg-dark: #1b1333;
+  --card: #241a44;
+  --input: #3a2f57;
+  --border: rgba(255,255,255,0.15);
+  --text: #ffffff;
+  --muted: rgba(255,255,255,0.65);
+}
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BACKGROUND */
+.fir-bg {
+  position: fixed;
+  inset: 0;
+  background: url("https://img.freepik.com/free-photo/international-day-literacy-concept-with-learning-tools_1150-24440.jpg") center/cover no-repeat;
+  filter: brightness(0.4);
+  z-index: 0;
+}
+
+.fir-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20,10,50,0.6), rgba(10,5,30,0.9));
+  z-index: 1;
+}
+
+/* PAGE */
+.fir-page {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ================= HEADER ================= */
+.fir-header {
+  padding: 50px 70px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(90deg, #1b1333, #2a1f4d);
+
+  color: white;
+}
+
+.fir-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.fir-eyebrow-text {
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.fir-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 400;
+}
+
+.fir-title em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.fir-subtitle {
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+/* BACK BUTTON */
+.fir-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 24px;
+
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+
+  color: white;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.fir-back-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: var(--gold);
+  transform: translateX(-3px);
+}
+
+.fir-back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ================= FORM ================= */
+.fir-container {
+  max-width: 850px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.fir-form-card {
+  background: var(--card);
+  border-radius: 6px;
+  padding: 40px;
+  border: 1px solid var(--border);
+}
+
+/* GRID */
+.fir-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* LABEL */
+.fir-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* INPUT */
+.fir-input,
+.fir-select,
+.fir-textarea {
+  width: 100%;
+  padding: 14px;
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: white;
+  font-size: 14px;
+}
+
+.fir-input::placeholder,
+.fir-textarea::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.fir-textarea {
+  min-height: 120px;
+}
+
+/* FILE */
+.fir-file-input {
+  width: 100%;
+  padding: 14px;
+  background: var(--input);
+  border: 1px dashed var(--gold);
+  color: white;
+}
+
+/* DIVIDER */
+.fir-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 20px 0;
+}
+
+/* BUTTONS */
+.fir-button-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.fir-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* RESET */
+.fir-btn-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: white;
+}
+
+/* SUBMIT */
+.fir-btn-submit {
+  background: var(--gold);
+  color: black;
+}
+
+
+/* 🔥 BIGGER TEXT EVERYWHERE (except back button) */
+
+/* TITLE */
+.fir-title {
+  font-size: 64px;   /* bigger */
+}
+
+/* SUBTITLE */
+.fir-subtitle {
+  font-size: 20px;
+}
+
+/* TOP SMALL TEXT */
+.fir-eyebrow-text {
+  font-size: 16px;
+}
+
+/* LABELS */
+.fir-label {
+  font-size: 16px;
+}
+
+/* INPUTS */
+.fir-input,
+.fir-select,
+.fir-textarea {
+  font-size: 18px;
+}
+
+/* FILE INPUT */
+.fir-file-input {
+  font-size: 18px;
+}
+
+/* BUTTONS (NOT back button) */
+.fir-btn {
+  font-size: 18px;
+}

@@ -1,5 +1,0 @@
-package edu.infosys.lostFoundLocatorApplication.config;
-
-public class WebSocketEventListener {
-
-}

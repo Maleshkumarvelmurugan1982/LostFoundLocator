@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import edu.infosys.lostFoundLocatorApplication.bean.FoundItem;
 import edu.infosys.lostFoundLocatorApplication.bean.LostItem;
-import edu.infosys.lostFoundLocatorApplication.bean.MatchItem;
 import edu.infosys.lostFoundLocatorApplication.bean.MatchItemDTO;
 import edu.infosys.lostFoundLocatorApplication.dao.LostItemDao;
 import edu.infosys.lostFoundLocatorApplication.dao.MatchItemDao;
@@ -28,30 +28,33 @@ public class MatchItemController {
     @Autowired
     private LostItemDao lostItemDao;
 
-    // ================= SAVE / CLAIM MATCH =================
+    // ================= SAVE MATCH (FIXED) =================
     @PostMapping("/match")
-    public void saveMatchItem(@RequestBody MatchItemDTO matchItemDTO) {
-        service.updateLostFoundItems(matchItemDTO);
-        MatchItem matchItem = new MatchItem(matchItemDTO);
-        matchItemDao.saveMatchItem(matchItem);
+    public ResponseEntity<String> saveMatchItem(@RequestBody MatchItemDTO matchItemDTO) {
+
+        service.saveMatchItem(matchItemDTO); // ✅ IMPORTANT FIX
+
+        return ResponseEntity.ok("Match saved successfully");
     }
 
     // ================= GET ALL MATCHES =================
     @GetMapping("/match")
-    public List<MatchItem> getAllMatchItems() {
-        return matchItemDao.getAllMatchItems();
+    public List<?> getAllMatchItems() {
+        return service.getAllMatches(); // ✅ return DTO
     }
 
-    // ================= GET PROBABLE MATCHES FOR A LOST ITEM =================
-    // ✅ UPDATED - now passes location for proximity ordering
+    // ================= GET PROBABLE MATCHES =================
     @GetMapping("/match/search/{lostItemId}")
     public List<FoundItem> getProbableMatches(@PathVariable String lostItemId) {
+
         LostItem lostItem = lostItemDao.getLostItemById(lostItemId);
+
         if (lostItem == null) return new ArrayList<>();
+
         return matchItemDao.findProbableMatches(
-            lostItem.getCategory(),   // ✅ fixed - removed underscores
-            lostItem.getItemName(),   // ✅ fixed - removed underscores
-            lostItem.getLocation()    // ✅ NEW - location for proximity ordering
+                lostItem.getCategory(),
+                lostItem.getItemName(),
+                lostItem.getLocation()
         );
     }
 }

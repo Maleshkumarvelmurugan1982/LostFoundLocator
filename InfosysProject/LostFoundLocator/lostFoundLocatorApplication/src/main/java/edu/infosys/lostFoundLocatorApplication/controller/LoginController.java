@@ -97,10 +97,16 @@ public class LoginController {
         service.deleteUser(username);
     }
 
-    // ================= GET CURRENT USERNAME =================
+    // ================= GET CURRENT USERNAME — shows personalName ✅ =================
     @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getUserId() {
-        return "\"" + service.getUserId() + "\"";
+        String username = service.getUserId();
+        if (username == null) return "\"Guest\"";
+        LostfoundUser user = service.findByUsername(username);
+        String displayName = (user != null && user.getPersonalName() != null)
+            ? user.getPersonalName()
+            : username; // fallback to username if personalName is null
+        return "\"" + displayName + "\"";
     }
 
     // ================= GET CURRENT ROLE =================

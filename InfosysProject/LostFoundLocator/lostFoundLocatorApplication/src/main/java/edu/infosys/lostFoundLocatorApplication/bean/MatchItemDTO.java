@@ -1,7 +1,5 @@
 package edu.infosys.lostFoundLocatorApplication.bean;
 
-import edu.infosys.lostFoundLocatorApplication.bean.MatchItem;
-
 public class MatchItemDTO {
 
     private String lostItemId;
@@ -10,14 +8,16 @@ public class MatchItemDTO {
     private String category;
     private String lostUsername;
     private String foundUsername;
-    private byte[] image;   // image stored in DB
+
+    // ✅ FIX: store image file name (String)
+    private String image;
 
     public MatchItemDTO() {
         super();
     }
 
     public MatchItemDTO(String lostItemId, String foundItemId, String itemName,
-                        String category, String lostUsername, String foundUsername, byte[] image) {
+                        String category, String lostUsername, String foundUsername, String image) {
         super();
         this.lostItemId = lostItemId;
         this.foundItemId = foundItemId;
@@ -37,7 +37,7 @@ public class MatchItemDTO {
         this.category = matchItem.getCategory();
         this.lostUsername = matchItem.getLostUsername();
         this.foundUsername = matchItem.getFoundUsername();
-        this.image = matchItem.getImage();
+        this.image = matchItem.getImage(); // ✅ IMPORTANT
     }
 
     public String getLostItemId() {
@@ -88,11 +88,12 @@ public class MatchItemDTO {
         this.foundUsername = foundUsername;
     }
 
-    public byte[] getImage() {
+    // ✅ UPDATED GETTER / SETTER
+    public String getImage() {
         return image;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 }

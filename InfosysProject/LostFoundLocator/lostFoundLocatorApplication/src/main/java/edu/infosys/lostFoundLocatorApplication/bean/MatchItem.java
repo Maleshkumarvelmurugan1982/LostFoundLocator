@@ -1,9 +1,7 @@
 package edu.infosys.lostFoundLocatorApplication.bean;
 
-import edu.infosys.lostFoundLocatorApplication.bean.MatchItemDTO;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,15 +16,15 @@ public class MatchItem {
     private String lostUsername;
     private String foundUsername;
 
-    @Lob
-    private byte[] image;   // image stored in database
+    // ✅ FIX: store image FILE NAME (String)
+    private String image;
 
     public MatchItem() {
         super();
     }
 
     public MatchItem(MatchItemId matchItemId, String itemName, String category,
-                     String lostUsername, String foundUsername, byte[] image) {
+                     String lostUsername, String foundUsername, String image) {
         super();
         this.matchItemId = matchItemId;
         this.itemName = itemName;
@@ -46,7 +44,7 @@ public class MatchItem {
         this.category = matchItem.getCategory();
         this.lostUsername = matchItem.getLostUsername();
         this.foundUsername = matchItem.getFoundUsername();
-        this.image = matchItem.getImage();
+        this.image = matchItem.getImage(); // ✅ IMPORTANT
     }
 
     public MatchItemId getMatchItemId() {
@@ -89,11 +87,12 @@ public class MatchItem {
         this.foundUsername = foundUsername;
     }
 
-    public byte[] getImage() {
+    // ✅ UPDATED GETTER/SETTER
+    public String getImage() {
         return image;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 }
